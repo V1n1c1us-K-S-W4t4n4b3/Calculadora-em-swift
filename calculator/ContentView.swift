@@ -9,10 +9,18 @@ import SwiftUI
 
 struct ContentView: View {
     
-    @State var previus = 0
-    @State var result = 0
+    @State var previus = 0.0
+    @State var result = 0.0
     @State var operation = 0
     @State var previusOperation = 0
+    
+    func removeZeroFromEnd(value: Double) -> String {
+        let f = NumberFormatter()
+        let number = NSNumber(value: value)
+        f.minimumFractionDigits = 0
+        f.maximumFractionDigits = 16
+       return f.string(from: number) ?? ""
+    }
     
     func process(digit: Int){
         if operation > 0 {
@@ -20,13 +28,35 @@ struct ContentView: View {
             previusOperation = operation
             operation = -1
         }
-        result = (result * 10) + digit
+        
+        result = (result * 10) + Double(digit)
+    }
+    
+    func reset(){
+        previus = 0
+        result = 0
+        operation = 0
+        previusOperation = 0
     }
     
     func calculate(){
+        
         if previusOperation == 1 {
             result = previus + result
             previusOperation = 0
+            
+        }else if previusOperation == 2 {
+            result = previus - result
+            previusOperation = 0
+            
+        }else if previusOperation == 3 {
+            result = previus * result
+            previusOperation = 0
+            
+        }else if previusOperation == 4 {
+            result = previus / result
+            previusOperation = 0
+            
         }
         previus = result
     }
@@ -40,7 +70,7 @@ struct ContentView: View {
             Spacer()
             
             HStack {
-                Text(String(result))
+                Text(String(removeZeroFromEnd(value: result)))
                     .padding()
                     .lineLimit(1)
                     .font(.system(size: CGFloat(80 / Int((Double(String(result).count + 10) / 8.0)))))
@@ -51,7 +81,7 @@ struct ContentView: View {
         
             HStack{
                 Button("AC"){
-                    result = 0
+                    reset()
                 }
                 .padding()
                 .frame(maxWidth: .infinity)
@@ -68,7 +98,8 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity)
                 
                 Button("/"){
-                    
+                    calculate()
+                    operation = 4
                 }
                 .padding(.vertical,40)
                 .frame(maxWidth: .infinity)
@@ -96,7 +127,8 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity)
                 
                 Button("X"){
-                    
+                    calculate()
+                    operation = 3
                 }
                 .padding(.vertical,40)
                 .frame(maxWidth: .infinity)
@@ -124,7 +156,8 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity)
                 
                 Button("-"){
-                    
+                    calculate()
+                    operation = 2
                 }
                 .padding(.vertical,40)
                 .frame(maxWidth: .infinity)
@@ -164,7 +197,7 @@ struct ContentView: View {
             GeometryReader{geometry in
                 HStack{
                     Button("0"){
-                        result = (result * 10) + 0
+                        process (digit: 0)
                     }
                     .padding()
                     .frame(minWidth:geometry.size.width/2)
@@ -176,7 +209,9 @@ struct ContentView: View {
                     .frame(maxWidth: .infinity)
                     
                     Button("="){
-                        
+                        calculate()
+                        previusOperation = 999
+                        operation = 999
                     }
                     .padding(.vertical,40)
                     .frame(maxWidth: .infinity)
