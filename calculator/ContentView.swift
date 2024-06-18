@@ -9,8 +9,10 @@ import SwiftUI
 
 struct ContentView: View {
     
+    @State var values = "0"
     @State var previus = 0.0
     @State var result = 0.0
+    @State var decimal = 0.0
     @State var operation = 0
     @State var previusOperation = 0
     
@@ -29,7 +31,14 @@ struct ContentView: View {
             operation = -1
         }
         
-        result = (result * 10) + Double(digit)
+        if decimal > 0.0 {
+            result = result + Double(truncating : NSNumber(value : (Double(digit) / decimal)))
+            decimal = decimal * 10
+            values  = "\(values)\(digit)"
+        }else{
+            result = (result * 10) + Double(digit)
+            values = removeZeroFromEnd(value: result)
+        }
     }
     
     func reset(){
@@ -37,6 +46,8 @@ struct ContentView: View {
         result = 0
         operation = 0
         previusOperation = 0
+        decimal = 0
+        values = "0"
     }
     
     func calculate(){
@@ -58,19 +69,17 @@ struct ContentView: View {
             previusOperation = 0
             
         }
+        decimal = 0.0
         previus = result
+        values = removeZeroFromEnd(value: result)
     }
     
     var body: some View {
         //
         VStack(alignment: .trailing, spacing: 0) {
-            Text("\(String(result).count)")
-                .foregroundColor(.red)
-            
             Spacer()
-            
             HStack {
-                Text(String(removeZeroFromEnd(value: result)))
+                Text(values)
                     .padding()
                     .lineLimit(1)
                     .font(.system(size: CGFloat(80 / Int((Double(String(result).count + 10) / 8.0)))))
@@ -79,7 +88,7 @@ struct ContentView: View {
                     .fixedSize(horizontal: true, vertical: false)
             }
         
-            HStack{
+            HStack(spacing: 0){
                 Button("AC"){
                     reset()
                 }
@@ -87,12 +96,15 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity)
                 
                 Button("+/-"){
-                    
+                    result = result * -1
+                    calculate()
                 }
                 .padding()
                 .frame(maxWidth: .infinity)
                 
                 Button("%"){
+                    result = result / 100
+                    calculate()
                 }
                 .padding()
                 .frame(maxWidth: .infinity)
@@ -107,7 +119,7 @@ struct ContentView: View {
                 
             }.foregroundColor(Color.white)
             
-            HStack{
+            HStack(spacing: 0){
                 Button("7"){
                     process (digit: 7)
                 }
@@ -136,7 +148,7 @@ struct ContentView: View {
                 
             }.foregroundColor(Color.white)
             
-            HStack{
+            HStack(spacing: 0){
                 Button("4"){
                     process (digit: 4)
                 }
@@ -165,7 +177,7 @@ struct ContentView: View {
                 
             }.foregroundColor(Color.white)
            
-            HStack{
+            HStack(spacing: 0){
                 Button("1"){
                     process (digit: 1)
                 }
@@ -195,15 +207,18 @@ struct ContentView: View {
             }.foregroundColor(Color.white)
             
             GeometryReader{geometry in
-                HStack{
+                HStack(spacing: 0){
                     Button("0"){
                         process (digit: 0)
                     }
                     .padding()
                     .frame(minWidth:geometry.size.width/2)
                     
-                    Button(","){
-                        
+                    Button("."){
+                        if decimal == 0.0{
+                            decimal = 10.0
+                            values = values + "."
+                        }
                     }
                     .padding()
                     .frame(maxWidth: .infinity)
